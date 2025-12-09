@@ -5,7 +5,7 @@
 
 .csv-table th, .csv-table td {
     border: 1px solid #ccc;
-    padding: 8px;
+    padding: 4px;
     text-align: left;
 }
 
@@ -16,3 +16,4 @@
 .csv-table tr:hover {
     background-color: #f1f1f1;
 }
+
