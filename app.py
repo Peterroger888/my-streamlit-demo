@@ -1,28 +1,17 @@
 import streamlit as st
-import pandas as pd
-from utils.helper import get_summary_stats
+import pathlib
 
-st.title("My Streamlit Demo App")
+st.title("Streamlit + External HTML Example")
 
-st.write("This is a simple app deployed from GitHub → Streamlit Community Cloud.")
+# Path to external HTML
+html_path = pathlib.Path("static/external_page.html")
 
-# Load sample data
-df = pd.read_csv("data/sample.csv")
+# Read the HTML
+if html_path.exists():
+    with open(html_path, "r", encoding="utf-8") as f:
+        html_content = f.read()
 
-st.subheader("📊 Sample Data")
-st.dataframe(df)
-
-# Summary statistics using helper module
-st.subheader("📈 Summary Statistics")
-stats = get_summary_stats(df)
-st.json(stats)
-
-# Upload a CSV
-st.subheader("📤 Upload your own CSV")
-uploaded = st.file_uploader("Choose CSV", type="csv")
-
-if uploaded:
-    user_df = pd.read_csv(uploaded)
-    st.dataframe(user_df)
-    st.write("Summary:")
-    st.json(get_summary_stats(user_df))
+    # Display inside Streamlit
+    st.components.v1.html(html_content, height=600, scrolling=True)
+else:
+    st.error("HTML file not found at: static/external_page.html")
