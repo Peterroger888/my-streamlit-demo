@@ -1,0 +1,18 @@
+.csv-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.csv-table th, .csv-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
+.csv-table th {
+    background-color: #f4f4f4;
+}
+
+.csv-table tr:hover {
+    background-color: #f1f1f1;
+}
