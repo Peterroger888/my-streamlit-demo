@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="CSV Viewer", layout="wide")
-st.title("CSV Data Displayed with External HTML, CSS & JS")
+st.title("CSV Data Display with External HTML, CSS & JS")
 
 # Upload CSV or use default
 uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
@@ -27,4 +27,5 @@ st.markdown('<link rel="stylesheet" href="static/css/style.css">', unsafe_allow_
 
 # Render HTML + JS
 components.html(html_content, height=500, scrolling=True)
+
 
