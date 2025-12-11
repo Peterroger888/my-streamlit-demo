@@ -3,7 +3,7 @@ import streamlit as st
 from pymongo import MongoClient, errors
 import pandas as pd
 
-st.title("MongoDB Migration Page (Debug Mode)")
+st.title("MongoDB Migration Page (Standard URI)")
 
 # ----------------------------
 # Read MongoDB credentials from Streamlit secrets
@@ -13,25 +13,25 @@ password = st.secrets["mongo"]["db_token"]
 db_name = st.secrets["mongo"]["db_name"]  # should be "mydb"
 
 # ----------------------------
-# Standard URI (non-SRV) recommended for cloud deployment
-# Replace the hosts with your cluster's hosts from Atlas
-# Example:
-# cluster0-shard-00-00.abcde.mongodb.net:27017,cluster0-shard-00-01.abcde.mongodb.net:27017,...
+# Full standard URI (non-SRV) - replace with your cluster shard hosts
+# Example format from Atlas driver code:
+# mongodb://username:password@host1:27017,host2:27017,host3:27017/dbname?ssl=true&replicaSet=atlas-xxxx-shard-0&authSource=admin&retryWrites=true&w=majority
 # ----------------------------
 mongo_uri = (
-    f"mongodb://{user}:{password}@cluster0-shard-00-00.abcde.mongodb.net:27017,"
-    f"cluster0-shard-00-01.abcde.mongodb.net:27017,"
-    f"cluster0-shard-00-02.abcde.mongodb.net:27017/"
+    f"mongodb://{user}:{password}@"
+    f"cluster0-shard-00-00.6hjrs.mongodb.net:27017,"
+    f"cluster0-shard-00-01.6hjrs.mongodb.net:27017,"
+    f"cluster0-shard-00-02.6hjrs.mongodb.net:27017/"
     f"{db_name}?ssl=true&replicaSet=atlas-xxxx-shard-0&authSource=admin&retryWrites=true&w=majority"
 )
 
 # ----------------------------
-# Function to connect to MongoDB safely
+# Connect to MongoDB
 # ----------------------------
 def get_db():
     try:
-        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # 5 sec timeout
-        client.server_info()  # force connection check
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # 5s timeout
+        client.server_info()  # forces connection check
         return client[db_name]
     except errors.ServerSelectionTimeoutError as e:
         st.error(f"Server selection timeout: {e}")
@@ -51,10 +51,10 @@ db = get_db()
 if db:
     st.success(f"Connected to MongoDB database: {db_name}")
 
-    # Select collection (you said 'records')
+    # Collection to load
     collection_name = "records"
 
-    if st.button("Load Data from 'records' Collection"):
+    if st.button(f"Load Data from '{collection_name}' Collection"):
         with st.spinner("Loading data..."):
             try:
                 collection = db[collection_name]
@@ -63,6 +63,6 @@ if db:
                     df = pd.DataFrame(data)
                     st.dataframe(df)
                 else:
-                    st.info("No data found in the collection 'records'.")
+                    st.info(f"No data found in the collection '{collection_name}'.")
             except Exception as e:
                 st.error(f"Error reading collection '{collection_name}': {e}")
