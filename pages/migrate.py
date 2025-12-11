@@ -1,37 +1,36 @@
-# migrate.py
+# pages/migrate.py
 import streamlit as st
 from pymongo import MongoClient, errors
 import pandas as pd
 
-st.title("MongoDB Migration Page (Standard URI)")
+st.title("MongoDB Migration Page")
 
 # ----------------------------
 # Read MongoDB credentials from Streamlit secrets
 # ----------------------------
 user = st.secrets["mongo"]["db_user"]
 password = st.secrets["mongo"]["db_token"]
-db_name = st.secrets["mongo"]["db_name"]  # should be "mydb"
+db_name = st.secrets["mongo"]["db_name"]  # e.g., "mydb"
 
 # ----------------------------
-# Full standard URI (non-SRV) - replace with your cluster shard hosts
-# Example format from Atlas driver code:
-# mongodb://username:password@host1:27017,host2:27017,host3:27017/dbname?ssl=true&replicaSet=atlas-xxxx-shard-0&authSource=admin&retryWrites=true&w=majority
+# Full standard URI for Atlas (replace hosts and replica set from Atlas Connect -> Python)
 # ----------------------------
 mongo_uri = (
     f"mongodb://{user}:{password}@"
     f"cluster0-shard-00-00.6hjrs.mongodb.net:27017,"
     f"cluster0-shard-00-01.6hjrs.mongodb.net:27017,"
     f"cluster0-shard-00-02.6hjrs.mongodb.net:27017/"
-    f"{db_name}?ssl=true&replicaSet=atlas-xxxx-shard-0&authSource=admin&retryWrites=true&w=majority"
+    f"{db_name}?ssl=true&replicaSet=atlas-abc123-shard-0&authSource=admin&retryWrites=true&w=majority"
 )
 
 # ----------------------------
 # Connect to MongoDB
 # ----------------------------
+@st.cache_resource  # caches connection
 def get_db():
     try:
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # 5s timeout
-        client.server_info()  # forces connection check
+        client.server_info()  # force connection
         return client[db_name]
     except errors.ServerSelectionTimeoutError as e:
         st.error(f"Server selection timeout: {e}")
@@ -51,10 +50,9 @@ db = get_db()
 if db:
     st.success(f"Connected to MongoDB database: {db_name}")
 
-    # Collection to load
-    collection_name = "records"
+    collection_name = "records"  # your collection
 
-    if st.button(f"Load Data from '{collection_name}' Collection"):
+    if st.button(f"Load Data from '{collection_name}'"):
         with st.spinner("Loading data..."):
             try:
                 collection = db[collection_name]
@@ -63,6 +61,6 @@ if db:
                     df = pd.DataFrame(data)
                     st.dataframe(df)
                 else:
-                    st.info(f"No data found in the collection '{collection_name}'.")
+                    st.info(f"No data found in '{collection_name}'.")
             except Exception as e:
                 st.error(f"Error reading collection '{collection_name}': {e}")
