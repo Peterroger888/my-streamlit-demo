@@ -11,14 +11,24 @@ st.title("MongoDB Migration Page")
 mongo_uri = st.secrets["mongo"]["uri"]
 
 # ----------------------------
+# Debug info
+# ----------------------------
+st.write("Attempting to connect to MongoDB Atlas...")
+st.write("Mongo URI (hidden for security):", mongo_uri[:30] + "...")
+
+
+# ----------------------------
 # Connect to MongoDB
 # ----------------------------
-@st.cache_resource  # caches connection
 def get_db():
     try:
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-        client.server_info()  # force connection
-        db_name = mongo_uri.split("/")[-1].split("?")[0]  # extract DB from URI
+        st.write("MongoClient created, checking server info...")
+        client.server_info()  # force connection to test
+        st.success("MongoDB connection successful!")
+        # Extract DB name from URI
+        db_name = mongo_uri.split("/")[-1].split("?")[0] or "mydb"
+        st.write(f"Using database: {db_name}")
         return client[db_name]
     except errors.ServerSelectionTimeoutError as e:
         st.error(f"Server selection timeout: {e}")
@@ -30,15 +40,17 @@ def get_db():
         st.error(f"Unexpected error: {e}")
         return None
 
+# ----------------------------
+# Get database
+# ----------------------------
 db = get_db()
 
 # ----------------------------
 # Main app
 # ----------------------------
-if db:
-    st.success(f"Connected to MongoDB database: {db.name}")
-
-    collection_name = "records"  # your collection
+if db is not None:  # <-- Fix for NotImplementedError
+    collection_name = "records"  # Change to your collection
+    st.write(f"Ready to load data from collection: '{collection_name}'")
 
     if st.button(f"Load Data from '{collection_name}'"):
         with st.spinner("Loading data..."):
