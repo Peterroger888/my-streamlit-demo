@@ -6,22 +6,9 @@ import pandas as pd
 st.title("MongoDB Migration Page")
 
 # ----------------------------
-# Read MongoDB credentials from Streamlit secrets
+# Read MongoDB URI from secrets
 # ----------------------------
-user = st.secrets["mongo"]["db_user"]
-password = st.secrets["mongo"]["db_token"]
-db_name = st.secrets["mongo"]["db_name"]  # e.g., "mydb"
-
-# ----------------------------
-# Full standard URI for Atlas (replace hosts and replica set from Atlas Connect -> Python)
-# ----------------------------
-mongo_uri = (
-    f"mongodb://{user}:{password}@"
-    f"cluster0-shard-00-00.6hjrs.mongodb.net:27017,"
-    f"cluster0-shard-00-01.6hjrs.mongodb.net:27017,"
-    f"cluster0-shard-00-02.6hjrs.mongodb.net:27017/"
-    f"{db_name}?ssl=true&replicaSet=atlas-abc123-shard-0&authSource=admin&retryWrites=true&w=majority"
-)
+mongo_uri = st.secrets["mongo"]["uri"]
 
 # ----------------------------
 # Connect to MongoDB
@@ -29,8 +16,9 @@ mongo_uri = (
 @st.cache_resource  # caches connection
 def get_db():
     try:
-        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # 5s timeout
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
         client.server_info()  # force connection
+        db_name = mongo_uri.split("/")[-1].split("?")[0]  # extract DB from URI
         return client[db_name]
     except errors.ServerSelectionTimeoutError as e:
         st.error(f"Server selection timeout: {e}")
@@ -48,7 +36,7 @@ db = get_db()
 # Main app
 # ----------------------------
 if db:
-    st.success(f"Connected to MongoDB database: {db_name}")
+    st.success(f"Connected to MongoDB database: {db.name}")
 
     collection_name = "records"  # your collection
 
