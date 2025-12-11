@@ -3,7 +3,7 @@ import streamlit as st
 from pymongo import MongoClient, errors
 import pandas as pd
 
-st.title("MongoDB Migration Page")
+st.title("MongoDB Migration Page (Debug Mode)")
 
 # ----------------------------
 # Read MongoDB credentials from Streamlit secrets
@@ -12,19 +12,29 @@ user = st.secrets["mongo"]["db_user"]
 password = st.secrets["mongo"]["db_token"]
 db_name = st.secrets["mongo"]["db_name"]  # should be "mydb"
 
-mongo_uri = f"mongodb+srv://{user}:{password}@cluster0.mongodb.net/{db_name}?retryWrites=true&w=majority"
+# ----------------------------
+# Standard URI (non-SRV) recommended for cloud deployment
+# Replace the hosts with your cluster's hosts from Atlas
+# Example:
+# cluster0-shard-00-00.abcde.mongodb.net:27017,cluster0-shard-00-01.abcde.mongodb.net:27017,...
+# ----------------------------
+mongo_uri = (
+    f"mongodb://{user}:{password}@cluster0-shard-00-00.abcde.mongodb.net:27017,"
+    f"cluster0-shard-00-01.abcde.mongodb.net:27017,"
+    f"cluster0-shard-00-02.abcde.mongodb.net:27017/"
+    f"{db_name}?ssl=true&replicaSet=atlas-xxxx-shard-0&authSource=admin&retryWrites=true&w=majority"
+)
 
 # ----------------------------
 # Function to connect to MongoDB safely
 # ----------------------------
-@st.cache_resource  # caches the connection to avoid reconnecting on every rerun
 def get_db():
     try:
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # 5 sec timeout
         client.server_info()  # force connection check
         return client[db_name]
     except errors.ServerSelectionTimeoutError as e:
-        st.error(f"Could not connect to MongoDB: {e}")
+        st.error(f"Server selection timeout: {e}")
         return None
     except errors.OperationFailure as e:
         st.error(f"Authentication failed: {e}")
@@ -41,7 +51,7 @@ db = get_db()
 if db:
     st.success(f"Connected to MongoDB database: {db_name}")
 
-    # Use the correct collection
+    # Select collection (you said 'records')
     collection_name = "records"
 
     if st.button("Load Data from 'records' Collection"):
