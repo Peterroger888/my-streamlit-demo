@@ -10,7 +10,7 @@ st.title("MongoDB Migration Page")
 # ----------------------------
 user = st.secrets["mongo"]["db_user"]
 password = st.secrets["mongo"]["db_token"]
-db_name = st.secrets["mongo"]["db_name"]
+db_name = st.secrets["mongo"]["db_name"]  # should be "mydb"
 
 mongo_uri = f"mongodb+srv://{user}:{password}@cluster0.mongodb.net/{db_name}?retryWrites=true&w=majority"
 
@@ -26,6 +26,12 @@ def get_db():
     except errors.ServerSelectionTimeoutError as e:
         st.error(f"Could not connect to MongoDB: {e}")
         return None
+    except errors.OperationFailure as e:
+        st.error(f"Authentication failed: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error: {e}")
+        return None
 
 db = get_db()
 
@@ -33,26 +39,20 @@ db = get_db()
 # Main app
 # ----------------------------
 if db:
-    st.success("Connected to MongoDB!")
+    st.success(f"Connected to MongoDB database: {db_name}")
 
-    # Fetch list of collections for user to choose
-    try:
-        collections = db.list_collection_names()
-        if collections:
-            collection_name = st.selectbox("Select a collection", collections)
+    # Use the correct collection
+    collection_name = "records"
 
-            if st.button("Load Data"):
-                with st.spinner("Loading data..."):
-                    try:
-                        data = list(db[collection_name].find())
-                        if data:
-                            df = pd.DataFrame(data)
-                            st.dataframe(df)
-                        else:
-                            st.info("No data found in this collection.")
-                    except Exception as e:
-                        st.error(f"Error reading collection: {e}")
-        else:
-            st.info("No collections found in the database.")
-    except Exception as e:
-        st.error(f"Error fetching collections: {e}")
+    if st.button("Load Data from 'records' Collection"):
+        with st.spinner("Loading data..."):
+            try:
+                collection = db[collection_name]
+                data = list(collection.find())
+                if data:
+                    df = pd.DataFrame(data)
+                    st.dataframe(df)
+                else:
+                    st.info("No data found in the collection 'records'.")
+            except Exception as e:
+                st.error(f"Error reading collection '{collection_name}': {e}")
