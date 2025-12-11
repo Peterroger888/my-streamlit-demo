@@ -44,6 +44,31 @@ if db is not None:
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         st.write("CSV Preview:", df)
-        
+
         # --- Step 2: Upload to MongoDB ---
         if st.button("Upload CSV to MongoDB"):
+            try:
+                collection = db[collection_name]
+                data = df.to_dict(orient="records")  # convert rows to dicts
+                if data:
+                    result = collection.insert_many(data)
+                    st.success(f"Inserted {len(result.inserted_ids)} records into '{collection_name}'")
+                else:
+                    st.info("CSV is empty, nothing to insert.")
+            except Exception as e:
+                st.error(f"Error inserting data: {e}")
+    else:
+        st.warning(f"CSV file not found at {csv_path}")
+
+    # --- Step 3: Display collection ---
+    if st.button(f"Load Data from '{collection_name}'"):
+        try:
+            collection = db[collection_name]
+            data = list(collection.find())
+            if data:
+                df = pd.DataFrame(data)
+                st.dataframe(df)
+            else:
+                st.info(f"No data found in '{collection_name}'.")
+        except Exception as e:
+            st.error(f"Error reading collection '{collection_name}': {e}")
