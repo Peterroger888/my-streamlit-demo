@@ -1,3 +1,4 @@
 streamlit
 pandas
 pymongo[srv]
+psycopg2-binary
