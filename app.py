@@ -30,7 +30,9 @@ def get_stock_data():
 # 3️⃣ Function to generate Plotly chart
 # -------------------------------
 def generate_plot(df_filtered, name, y_column='market_price'):
+    """Generate a responsive Plotly chart for Streamlit."""
     fig = go.Figure()
+    
     fig.add_trace(go.Scatter(
         x=df_filtered['today_date'],
         y=df_filtered[y_column],
@@ -38,6 +40,7 @@ def generate_plot(df_filtered, name, y_column='market_price'):
         name=name,
         marker=dict(color='blue')
     ))
+
     fig.update_layout(
         title=f"Stock Price - {name}",
         xaxis_title="Date",
@@ -45,15 +48,21 @@ def generate_plot(df_filtered, name, y_column='market_price'):
         yaxis_tickprefix='$',
         yaxis_tickformat=',.3f',
         hovermode='x unified',
+<<<<<<< HEAD
         width=1200,   # increase width
         height=600,
+=======
+        height=600,  # responsive height, can adjust
+        margin=dict(l=40, r=40, t=60, b=60),  # proper padding
+>>>>>>> a3c4d30 (increase chart width)
         xaxis=dict(
-            dtick=604800000,
+            dtick=604800000,  # weekly ticks
             tickangle=90,
             tickfont=dict(size=8),
             tickformat="%d-%b"
         )
     )
+    
     return fig
 
 # -------------------------------
