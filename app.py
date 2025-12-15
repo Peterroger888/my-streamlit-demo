@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import streamlit as st
 import pandas as pd
 import plotly.graph_objs as go
@@ -212,4 +211,3 @@ st.plotly_chart(fig, use_container_width=True)
 # --------------------------------
 with st.expander("Show data table"):
     st.dataframe(df_plot)
->>>>>>> 0c677943fd3e00590098223fa70c379a4e3bb755
