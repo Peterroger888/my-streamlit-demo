@@ -2,7 +2,7 @@ name: SGX Stock Price Update
 
 on:
   schedule:
-    - cron: "0 9 * * 1-5"   # Mon–Fri, 9am UTC
+    - cron: "32 9 * * 1-5"  # 17:32 SGT Mon–Fri
   workflow_dispatch:
 
 jobs:
