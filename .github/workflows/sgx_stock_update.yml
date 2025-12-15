@@ -1,0 +1,28 @@
+name: SGX Stock Price Update
+
+on:
+  schedule:
+    - cron: "0 9 * * 1-5"   # Mon–Fri, 9am UTC
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance psycopg2-binary pandas
+
+      - name: Run stock fetcher
+        env:
+          POSTGRES_URI: ${{ secrets.POSTGRES_URI }}
+        run: |
+          python fetch_sgx_prices.py
