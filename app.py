@@ -48,13 +48,10 @@ def generate_plot(df_filtered, name, y_column='market_price'):
         yaxis_tickprefix='$',
         yaxis_tickformat=',.3f',
         hovermode='x unified',
-<<<<<<< HEAD
         width=1200,   # increase width
         height=600,
-=======
         height=600,  # responsive height, can adjust
         margin=dict(l=40, r=40, t=60, b=60),  # proper padding
->>>>>>> a3c4d30 (increase chart width)
         xaxis=dict(
             dtick=604800000,  # weekly ticks
             tickangle=90,
