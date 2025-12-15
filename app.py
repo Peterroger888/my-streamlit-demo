@@ -29,37 +29,23 @@ def get_stock_data():
 # -------------------------------
 # 3️⃣ Function to generate Plotly chart
 # -------------------------------
-def generate_plot(df_filtered, name, y_column='market_price'):
-    """Generate a responsive Plotly chart for Streamlit."""
-    fig = go.Figure()
-    
-    fig.add_trace(go.Scatter(
-        x=df_filtered['today_date'],
-        y=df_filtered[y_column],
-        mode='lines+markers',
-        name=name,
-        marker=dict(color='blue')
-    ))
-
-    fig.update_layout(
-        title=f"Stock Price - {name}",
-        xaxis_title="Date",
-        yaxis_title="Price ($)" if y_column == 'market_price' else "Market Value ($)",
-        yaxis_tickprefix='$',
-        yaxis_tickformat=',.3f',
-        hovermode='x unified',
-        width=1200,   # increase width
-        height=600,
-        margin=dict(l=40, r=40, t=60, b=60),  # proper padding
-        xaxis=dict(
-            dtick=604800000,  # weekly ticks
-            tickangle=90,
-            tickfont=dict(size=8),
-            tickformat="%d-%b"
-        )
+fig.update_layout(
+    title=f"Stock Price - {name}",
+    xaxis_title="Date",
+    yaxis_title="Price ($)" if y_column == 'market_price' else "Market Value ($)",
+    yaxis_tickprefix='$',
+    yaxis_tickformat=',.3f',
+    hovermode='x unified',
+    height=600,
+    margin=dict(l=40, r=40, t=60, b=120),  # extra bottom space for 90° labels
+    xaxis=dict(
+        dtick=604800000,      # weekly ticks
+        tickangle=90,         # your preference
+        tickfont=dict(size=8),
+        tickformat="%d-%b",
+        automargin=True       # IMPORTANT for vertical labels
     )
-    
-    return fig
+)
 
 # -------------------------------
 # 4️⃣ Fetch data
