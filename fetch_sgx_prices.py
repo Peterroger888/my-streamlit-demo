@@ -2,8 +2,21 @@ import os
 import yfinance as yf
 import psycopg2
 from datetime import datetime
+from zoneinfo import ZoneInfo
+import sys
 
-# -------- DEFINE STOCKS --------
+# ---------------- TIMEZONE ----------------
+SG_TZ = ZoneInfo("Asia/Singapore")
+
+now_sg = datetime.now(SG_TZ)
+print(f"🕒 Job started at (SGT): {now_sg}")
+
+# ---------------- WEEKDAY GUARD ----------------
+if now_sg.weekday() >= 5:
+    print("⏸️ Weekend in Singapore. Job skipped.")
+    sys.exit(0)
+
+# ---------------- DEFINE STOCKS ----------------
 MY_STOCKS = [
     {"name": "ACMA", "code": "AYV.SI", "total": 225},
     {"name": "F & N", "code": "F99.SI", "total": 1000},
@@ -18,50 +31,55 @@ MY_STOCKS = [
     {"name": "SEATRIUM LTD", "code": "5E2.SI", "total": 2919},
     {"name": "SEMBCORP IND", "code": "U96.SI", "total": 1000},
     {"name": "THAKRAL", "code": "AWI.SI", "total": 500},
-    {"name": "WING TAI", "code": "W05.SI", "total": 6000}
+    {"name": "WING TAI", "code": "W05.SI", "total": 6000},
 ]
 
-# -------- DATABASE URL FROM ENV --------
+# ---------------- DATABASE ----------------
 DATABASE_URL = os.environ.get("POSTGRES_URI")
-
 if not DATABASE_URL:
-    raise RuntimeError("📌 ERROR: POSTGRES_URI environment variable is not set!")
+    raise RuntimeError("❌ POSTGRES_URI environment variable not set")
 
-
-# -------- FETCH PRICES FROM YAHOO --------
+# ---------------- FETCH PRICES (PYTHONANYWHERE-EQUIVALENT) ----------------
 def fetch_prices(stocks):
     prices = {}
     dates = {}
 
     for stock in stocks:
         ticker = yf.Ticker(stock["code"])
-        history = ticker.history(period="1d")
 
-        if not history.empty:
-            close_price = float(history["Close"].iloc[-1])
-            trading_date = history.index[-1].date().isoformat()
+        # Fetch last 2 trading days to tolerate Yahoo delay
+        history = ticker.history(
+            period="2d",
+            interval="1d",
+            auto_adjust=False
+        ).dropna()
 
-            prices[stock["code"]] = close_price
-            dates[stock["code"]] = trading_date
-
-            print(
-                f"[OK] {stock['name']} ({stock['code']}) "
-                f"@ {close_price:,} on {trading_date}"
-            )
-        else:
+        if history.empty:
             prices[stock["code"]] = None
             dates[stock["code"]] = None
-            print(f"[WARN] No data for {stock['name']} ({stock['code']})")
+            print(f"⚠️ No data for {stock['name']} ({stock['code']})")
+            continue
+
+        latest = history.iloc[-1]
+
+        close_price = float(latest["Close"])
+        trading_date = latest.name.date().isoformat()
+
+        prices[stock["code"]] = close_price
+        dates[stock["code"]] = trading_date
+
+        print(
+            f"[OK] {stock['name']} ({stock['code']}) "
+            f"@ {close_price:,} on {trading_date}"
+        )
 
     return prices, dates
 
-
-# -------- UPDATE DB --------
+# ---------------- UPDATE DB ----------------
 def update_db(stocks):
     conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
 
-    # UPSERT: if (today_date, code) exists, update values
     sql = """
     INSERT INTO stock_price (
         today_date, name, code, free, blocked, total,
@@ -81,8 +99,7 @@ def update_db(stocks):
             stock["trading_date"],
             stock["name"],
             stock["code"].replace(".SI", ""),
-            0,  # free
-            0,  # blocked
+            0, 0,
             stock["total"],
             "SGD",
             stock["market_price"],
@@ -92,38 +109,32 @@ def update_db(stocks):
     conn.commit()
     cursor.close()
     conn.close()
-    print(f"[SUCCESS] DB updated with {len(stocks)} stocks.")
+    print(f"✅ Database updated with {len(stocks)} stocks.")
 
-
-# -------- MAIN --------
+# ---------------- MAIN ----------------
 if __name__ == "__main__":
-    print("🕒 Starting SGX price fetch at", datetime.utcnow().isoformat())
-
     prices, dates = fetch_prices(MY_STOCKS)
-    enriched = []
 
+    enriched = []
     for stock in MY_STOCKS:
         code = stock["code"]
         price = prices.get(code)
-        date_str = dates.get(code)
+        trading_date = dates.get(code)
 
-        if price is None or date_str is None:
-            print(f"[SKIP] {stock['name']} ({code}) skipped.")
+        if price is None or trading_date is None:
+            print(f"[SKIP] {stock['name']} ({code})")
             continue
-
-        total = stock["total"]
-        market_val = price * total
 
         enriched.append({
             **stock,
             "market_price": price,
-            "market_value": market_val,
-            "trading_date": date_str
+            "market_value": price * stock["total"],
+            "trading_date": trading_date
         })
 
     if enriched:
         update_db(enriched)
     else:
-        print("⚠ No valid stocks to update.")
+        print("⚠️ No valid stocks to update.")
 
-    print("✅ Fetch job complete.")
+    print("🏁 SGX fetch job completed.")
