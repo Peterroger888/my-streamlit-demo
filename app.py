@@ -1,17 +1,19 @@
 import streamlit as st
 import pandas as pd
-
-# Example: your df from PostgreSQL
-# df = get_stock_data()
+import plotly.graph_objs as go
+import json
 
 # -------------------------------
-# Sidebar: Select Stock
+# 1️⃣ Fetch stock data
 # -------------------------------
+df = get_stock_data()  # Make sure this function is defined and returns a DataFrame
 
-# Ensure only unique, non-empty names appear in the sidebar
+# -------------------------------
+# 2️⃣ Prepare unique stock names for sidebar
+# -------------------------------
 stock_names = ['All'] + sorted(df['name'].dropna().astype(str).unique())
 
-# Add a unique key to prevent duplicate element IDs
+# Use a unique key to avoid StreamlitDuplicateElementId
 selected_stock = st.sidebar.selectbox(
     "Select Stock",
     stock_names,
@@ -19,32 +21,18 @@ selected_stock = st.sidebar.selectbox(
 )
 
 # -------------------------------
-# Filter data based on selection
+# 3️⃣ Filter data based on selection
 # -------------------------------
 if selected_stock == "All":
-    df_filtered = df.copy()
+    # Aggregate all stocks by date for "All"
+    df_filtered = df.groupby('today_date', as_index=False)['market_value'].sum()
+    chart_json = generate_plot(df_filtered, 'Total Market Value', y_column='market_value')
 else:
+    # Filter for the selected stock
     df_filtered = df[df['name'] == selected_stock]
+    chart_json = generate_plot(df_filtered, selected_stock, y_column='market_price')
 
 # -------------------------------
-# Generate chart (Plotly example)
+# 4️⃣ Render chart
 # -------------------------------
-import plotly.graph_objs as go
-
-fig = go.Figure()
-for stock_name, stock_data in df_filtered.groupby('name'):
-    fig.add_trace(go.Scatter(
-        x=stock_data['today_date'],
-        y=stock_data['market_price'],
-        mode='lines+markers',
-        name=stock_name
-    ))
-
-fig.update_layout(
-    title=f"Stock Prices - {selected_stock}",
-    xaxis_title="Date",
-    yaxis_title="Price (SGD)",
-    hovermode='x unified'
-)
-
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(json.loads(chart_json), use_container_width=True)
