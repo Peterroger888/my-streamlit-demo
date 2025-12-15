@@ -102,4 +102,5 @@ st.plotly_chart(fig, use_container_width=True)
 # --------------------------------
 # Optional: data preview
 # --------------------------------
-with st.expander("Show data
+with st.expander("Show data table"):
+    st.dataframe(df_plot)
