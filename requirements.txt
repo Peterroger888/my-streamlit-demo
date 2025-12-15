@@ -1,2 +1,10 @@
+<<<<<<< HEAD
 streamlit
 pandas
+=======
+streamlit
+pandas
+pymongo[srv]
+psycopg2-binary
+plotly
+>>>>>>> 0c677943fd3e00590098223fa70c379a4e3bb755

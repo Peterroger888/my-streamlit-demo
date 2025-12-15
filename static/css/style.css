@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .csv-table {
     border-collapse: collapse;
     width: 100%;
@@ -16,3 +17,24 @@
 .csv-table tr:hover {
     background-color: #f1f1f1;
 }
+=======
+.csv-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.csv-table th, .csv-table td {
+    border: 1px solid #ccc;
+    padding: 4px;
+    text-align: left;
+}
+
+.csv-table th {
+    background-color: #f4f4f4;
+}
+
+.csv-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+>>>>>>> 0c677943fd3e00590098223fa70c379a4e3bb755
