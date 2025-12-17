@@ -4,8 +4,6 @@ import plotly.graph_objs as go
 import psycopg2
 import os
 
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
-
 # --- Add this line to set wide mode ---
 st.set_page_config(layout="wide") 
 
@@ -53,8 +51,7 @@ def generate_plot(df_filtered, name, y_column='market_price'):
         yaxis_tickformat=',.3f',
         hovermode='x unified',
         height=600,
-        autosize=True, 
-        margin=dict(l=40, r=40, t=60, b=120),
+        margin=dict(l=20, r=20, t=60, b=120),
         xaxis=dict(
             dtick=604800000,
             tickangle=90,
