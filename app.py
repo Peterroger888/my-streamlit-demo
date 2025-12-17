@@ -51,6 +51,7 @@ def generate_plot(df_filtered, name, y_column='market_price'):
         yaxis_tickformat=',.3f',
         hovermode='x unified',
         height=600,
+        width=1400,
         margin=dict(l=20, r=20, t=60, b=120),
         xaxis=dict(
             dtick=604800000,
