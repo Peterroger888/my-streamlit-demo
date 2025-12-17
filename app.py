@@ -4,6 +4,9 @@ import plotly.graph_objs as go
 import psycopg2
 import os
 
+# --- Add this line to set wide mode ---
+st.set_page_config(layout="wide") 
+
 # -------------------------------
 # 1️⃣ Database configuration
 # -------------------------------
