@@ -4,6 +4,8 @@ import plotly.graph_objs as go
 import psycopg2
 import os
 
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
 # --- Add this line to set wide mode ---
 st.set_page_config(layout="wide") 
 
