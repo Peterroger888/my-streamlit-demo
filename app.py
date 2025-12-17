@@ -94,4 +94,4 @@ else:
 # -------------------------------
 # 7️⃣ Render chart
 # -------------------------------
-st.plotly_chart(chart_fig, use_container_width=True)
+st.plotly_chart(chart_fig, use_container_width=False)
