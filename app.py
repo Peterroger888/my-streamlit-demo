@@ -12,11 +12,11 @@ st.set_page_config(layout="wide")
 # -------------------------------
 # Make sure you set the environment variable POSTGRES_URI in Streamlit secrets
 #DATABASE_URL = st.secrets["postgres"]["uri"]
-try:
-    # Streamlit Cloud
+# Try Streamlit Cloud secrets first
+if hasattr(st, "secrets") and "postgres" in st.secrets:
     DATABASE_URL = st.secrets["postgres"]["uri"]
-except AttributeError:
-    # Render (or other platforms)
+else:
+    # Fallback for Render or local testing
     DATABASE_URL = os.environ.get("POSTGRES_URI")
 
 # -------------------------------
