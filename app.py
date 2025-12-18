@@ -21,7 +21,7 @@ def get_stock_data():
     """Fetch latest stock data from PostgreSQL"""
     try:
         conn = psycopg2.connect(DATABASE_URL)
-        query = "SELECT * FROM stock_price"
+        query = "SELECT * FROM stock_price order by today_date"
         df = pd.read_sql(query, conn)
         conn.close()
         return df
