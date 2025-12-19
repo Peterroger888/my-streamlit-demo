@@ -11,13 +11,13 @@ st.set_page_config(layout="wide")
 # 1️⃣ Database configuration
 # -------------------------------
 # Make sure you set the environment variable POSTGRES_URI in Streamlit secrets
-DATABASE_URL = st.secrets["postgres"]["uri"]
+#DATABASE_URL = st.secrets["postgres"]["uri"]
 # Streamlit Cloud secrets first
-#try:
-    #DATABASE_URL = st.secrets["postgres"]["uri"]
-#except (AttributeError, KeyError):
+try:
+    DATABASE_URL = st.secrets["postgres"]["uri"]
+except (AttributeError, KeyError):
     # Render or local fallback
-    #DATABASE_URL = os.environ.get("POSTGRES_URI")
+    DATABASE_URL = os.environ.get("POSTGRES_URI")
 
 # -------------------------------
 # 2️⃣ Function to fetch stock data
